@@ -1,19 +1,20 @@
-# Nahrungsmittel-Managementsystem für Schiffe.
-Version 0.1a
-Autor: Martin Küttner - https://martin-kuettner.de
-Lizenz: GNU General Public License
+# Food management system for ships.
+- Version 0.1a
+- Original auhtor:(all the credits) Martin Küttner - segeln@fmode.de https://martin-kuettner.de 
+- Optimization, semi-automated translation: Andrey Astashov mvc.aaa@gmail.com
+- License: GNU General Public License
  
-## Zweck der Software: 
-- Registrierung verschiedener Lebensmittel incl. Haltbarkeitsdatum und Lagerort
-- einfaches Interface zum Wiederfinden der Lebensmittel
-- Sortierung nach Ist/Sollmenge, Haltbarkeit, Lagerort, Typ, Name
+## Purpose: 
+- various foods catalog: categories, expiry date and some boat-specific info like storage location
+- simple search
+- multiple sorting options: by actual/target quantity, shelf life, storage location, type, name
   
 ## Motivation:
-- auf allen Displaytypen darstellbar
-- kein Java oder ActiveX
-- übersichtliche Nutzeroberfläche
+- can be displayed on any display type
+- no JavaScript or ActiveX
+- clear user interface
    
-## Geschichte: 
+## History(kept not translated): 
 Für unsere Auszeit haben wir uns über die Lagerhaltung Gedanken gemacht. 
 Viele nutzen dafür eine Exel Tabelle, was meiner Meinung zu viele Nachteile hat.
 Diese wären: 
@@ -26,51 +27,40 @@ Da wir auf dem Schiff sowieso schon einen Raspberry in Betrieb haben,
 auf dem ein Web- und SQL Server läuft, bot sich diese Lösung mehr als an.
    
 ## Installation:
- 
-Sehr wichtiger Hinweis:
-Damit das Ganze richtig funktioniert benötigt der Raspberry eine korrekt eingestellte Uhrzeit.
-Nun ist das Problem: Der Raspberry hat keine RTC (Real-Time-Clock).
-Man hat also 4 Optionen:
-- man schenkt dem RPI eine RTC (externes Modul mit Batterie)
-- falls der RPI Internetzugang hat nutzt man einen ntp-Dienst
-- man stellt die Uhr nach jedem Start manuell 
-- man holt sie die Uhrzeit über den RMC String von einem GPS Empfänger
-    (so mache ich das)
+__Very important note:__ 
+To work properly the Raspberry server (RPI) needs a correctly set time. The RPI has no RTC (real-time clock). 
 
-benötigt wird: 
-- irgend ein Rasberry PI ;) (also kein RPI 3+)
-- mySQL Server
-- Webserver (Apache2 oder Lighttp)
-- ggf. SQL Adminpanel wie phpmyadmin
-Auf die Installation dieser Dienste gehe ich an dieser Stelle nicht ein, 
-dazu gibt es genug Anleitungen im Internet
-   
-Im SQL Server (Terminal oder phpmyadmin):
-(Bitte das xxx durch ein Passwort ersetzen)
+So, you have four options:
+1. you give the RPI a RTC (external hardware module with a battery)
+2. you can use an ntp service (needs internet connection)   
+3. manually set the clock on each RPI start
+4. you get the time from a GPS receiver via the RMC string  (that's how I did it)
 
-GRANT USAGE ON *.* TO 'futter'@'localhost' IDENTIFIED BY 'xxx' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;
+__Very important note nummer zwei__: This software designed to run on a local network on a ship. Please dont run it on a server on the Internet. I give no guarantee for its security. The software is neither explosion proof nor dDOS safe.
+
+### Hardwatre requirements:
+- any Rasberry PI (so no RPI 3+ :-) ) 
+### Software
+- MySQL Server
+- PHP
+- Webserver (Apache2, Lighttp, Nginx)
+- optional. MySQL web console like `phpmyadmin`
+
+There are many instructions on the Internet how to install all of this on RPI - please use google.
+
+### Step-by-step instructions:
+1. Create MySQL user, database and import tables. In MySQL Server (terminal or phpmyadmin) (Please replace the `xxx` with some random password):
+```sql
+GRANT USAGE ON *.* TO 'futter'@'localhost' IDENTIFIED BY 'xxx';
+GRANT ALL PRIVILEGES ON `futter%`.* TO 'futter'@'localhost';
 CREATE DATABASE IF NOT EXISTS `futter`;
-GRANT ALL PRIVILEGES ON `futter`.* TO 'futter'@'localhost';
-GRANT ALL PRIVILEGES ON `futter\_%`.* TO 'futter'@'localhost';
+```
+2. import schema file `struktur.sql` using console `mysql -u futter -p xxx < struktur.sql` or `phpmyadmin`. (replace the `xxx` with previously generated password)
+3. fix `futter.php` file: set `$MySqlPwd` variable (line `82`): replace `xxx` with previously generated MySQL password.
+4. upload  `futter.php` to the web accessible folder of RPI and point your browser to `http://xxx.xxx.xxx.xxx/futter.php`, where `xxx.xxx.xxx.xxx` - IP address of your RPI
 
-   
-Die Struktur kann man am besten über die Datei struktur.sql erzeugen 
-(entweder mit "mysql -u futter -p futter < struktur.sql" im Shell einspielen,
-oder via des SQL Knopfes im phpmyadmin mittels Copy & Paste in der Datenbank "futter" ausführen)
-   
-Zum Schluß noch in dieser Datei die "xxx" bei "$MySqlPwd" entsprechend einstellen 
-das Ganze anschließend in den www Ordner vom Webserver laden.
-Gibt man dann http://x.x.x.x (x.x.x.x = IP des Raspberrys) ein, sollte eine Seite 
-mit "It works!" erscheinen (=Webserver läuft).
-   
-Über den Link http://x.x.x.x/futter.php sollte das Register aufrufbar sein.
+have fun! 
 
-Anregungen, Kritik, Danksagungen, Geld, Ruhm, Ehre ;) bitte an segeln@fmode.de
+Martin Küttner, 03/2019
 
-viel Spaß!
-Martin Küttner 03/2019
-
-Hinweis: 
-Falls die Software auf einem Server im Internet betrieben werden soll gebe ich
-keine Garantie für sie Sicherheit. Die Software ist weder Exploidgeprüft noch
-dDOS-sicher. Als Einsatzzweck ist ein lokales Netzwerk auf einem Schiff angedacht.
+Andrey Astashov, Helsinki, 04/2019
